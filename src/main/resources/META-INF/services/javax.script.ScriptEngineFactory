@@ -1,0 +1,2 @@
+org.operaton.bpm.extension.javascriptpolyglot.JavaScriptPolyglotScriptEngineFactory
+org.operaton.bpm.extension.javascriptpolyglot.TypeScriptPolyglotScriptEngineFactory
