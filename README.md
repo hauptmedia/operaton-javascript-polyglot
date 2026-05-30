@@ -176,3 +176,9 @@ The tests cover:
 - TypeScript transpilation and diagnostics
 - default `javascript` compatibility
 - Spring Boot auto-configuration
+
+## Tagged Builds
+
+Pushing any Git tag triggers the `Build Tagged Artifact` GitHub Actions workflow.
+The workflow runs `mvn -B package` on Java 21 and uploads the built jar from
+`target/operaton-javascript-polyglot-*.jar` as a workflow artifact.

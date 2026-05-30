@@ -1,0 +1,36 @@
+name: Build Tagged Artifact
+
+on:
+  push:
+    tags:
+      - '*'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build JAR
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Build package
+        run: mvn -B package
+
+      - name: Upload JAR artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: operaton-javascript-polyglot-${{ github.ref_name }}
+          path: target/operaton-javascript-polyglot-*.jar
+          if-no-files-found: error
+          retention-days: 30
