@@ -37,7 +37,24 @@ mode, so it does not need Node.js and does not type-check against a project
 
 ## Maven Usage
 
-Add the jar to the application classpath:
+The jar is not published to Maven Central yet. Until it is available from a
+public Maven repository, download the jar from the GitHub Releases page and add
+it to the application classpath, or install it into a local or private Maven
+repository.
+
+Install a downloaded release jar into the local Maven repository with:
+
+```sh
+mvn install:install-file \
+  -Dfile=operaton-javascript-polyglot-2.1.0.jar \
+  -DgroupId=org.operaton.bpm.extension \
+  -DartifactId=operaton-javascript-polyglot \
+  -Dversion=2.1.0 \
+  -Dpackaging=jar
+```
+
+After installing or publishing the jar to a Maven repository, add the dependency
+to the Operaton application:
 
 ```xml
 <dependency>
@@ -47,20 +64,12 @@ Add the jar to the application classpath:
 </dependency>
 ```
 
-Build it locally with:
+Alternatively, build and install it locally from source:
 
 ```sh
 mvn package
-```
-
-Install it into the local Maven repository with:
-
-```sh
 mvn install
 ```
-
-After publishing or installing the jar, an Operaton application can depend on it
-like any other Maven artifact.
 
 ## Spring Boot Usage
 
@@ -181,4 +190,6 @@ The tests cover:
 
 Pushing any Git tag triggers the `Build Tagged Artifact` GitHub Actions workflow.
 The workflow runs `mvn -B package` on Java 17 and uploads the built jar from
-`target/operaton-javascript-polyglot-*.jar` as a workflow artifact.
+`target/operaton-javascript-polyglot-*.jar` as a workflow artifact. Attach that
+jar to the corresponding GitHub Release so users can download it without Maven
+Central.
