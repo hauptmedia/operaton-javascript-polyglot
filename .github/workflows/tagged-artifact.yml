@@ -35,6 +35,15 @@ jobs:
           VERSION="$(mvn -q -DforceStdout help:evaluate -Dexpression=project.version)"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
+      - name: Resolve GPG primary key
+        id: gpg
+        run: |
+          set -euo pipefail
+          GPG_FINGERPRINT="$(gpg --batch --list-secret-keys --with-colons --fingerprint | awk -F: '/^fpr:/ { print $10; exit }')"
+          test -n "$GPG_FINGERPRINT"
+          echo "fingerprint=$GPG_FINGERPRINT" >> "$GITHUB_OUTPUT"
+          echo "MAVEN_GPG_KEY_NAME=${GPG_FINGERPRINT}!" >> "$GITHUB_ENV"
+
       - name: Check Maven Central
         id: central
         run: |
@@ -52,31 +61,37 @@ jobs:
         if: steps.central.outputs.published != 'true'
         run: |
           set -euo pipefail
-          GPG_FINGERPRINT="$(gpg --batch --list-secret-keys --with-colons --fingerprint | awk -F: '/^fpr:/ { print $10; exit }')"
-          test -n "$GPG_FINGERPRINT"
 
-          CHECK_HOME="$(mktemp -d)"
-          if gpg --homedir "$CHECK_HOME" --batch --keyserver keyserver.ubuntu.com --recv-keys "$GPG_FINGERPRINT"; then
-            rm -rf "$CHECK_HOME"
-            echo "GPG public key is already available on keyserver.ubuntu.com."
-            exit 0
-          fi
-          rm -rf "$CHECK_HOME"
-
-          gpg --batch --keyserver keyserver.ubuntu.com --send-keys "$GPG_FINGERPRINT"
-
-          for attempt in 1 2 3 4 5; do
-            GNUPGHOME="$(mktemp -d)"
-            if gpg --homedir "$GNUPGHOME" --batch --keyserver keyserver.ubuntu.com --recv-keys "$GPG_FINGERPRINT"; then
-              rm -rf "$GNUPGHOME"
-              exit 0
+          ensure_keyserver() {
+            keyserver="$1"
+            check_home="$(mktemp -d)"
+            if gpg --homedir "$check_home" --batch --keyserver "$keyserver" --recv-keys "${{ steps.gpg.outputs.fingerprint }}"; then
+              rm -rf "$check_home"
+              echo "GPG public key is already available on $keyserver."
+              return 0
             fi
-            rm -rf "$GNUPGHOME"
-            sleep 15
-          done
+            rm -rf "$check_home"
 
-          echo "GPG public key was not visible on keyserver.ubuntu.com in time."
-          exit 1
+            gpg --batch --keyserver "$keyserver" --send-keys "${{ steps.gpg.outputs.fingerprint }}"
+
+            for attempt in 1 2 3 4 5; do
+              verify_home="$(mktemp -d)"
+              if gpg --homedir "$verify_home" --batch --keyserver "$keyserver" --recv-keys "${{ steps.gpg.outputs.fingerprint }}"; then
+                rm -rf "$verify_home"
+                echo "GPG public key is visible on $keyserver."
+                return 0
+              fi
+              rm -rf "$verify_home"
+              sleep 15
+            done
+
+            echo "GPG public key was not visible on $keyserver in time."
+            return 1
+          }
+
+          ensure_keyserver keyserver.ubuntu.com
+          ensure_keyserver keys.openpgp.org
+          ensure_keyserver pgp.mit.edu
 
       - name: Publish to Maven Central
         if: steps.central.outputs.published != 'true'

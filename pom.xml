@@ -200,6 +200,7 @@
               </execution>
             </executions>
             <configuration>
+              <keyname>${env.MAVEN_GPG_KEY_NAME}</keyname>
               <passphrase>${env.MAVEN_GPG_PASSPHRASE}</passphrase>
               <gpgArguments>
                 <arg>--batch</arg>
