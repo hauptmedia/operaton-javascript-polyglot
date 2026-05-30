@@ -65,18 +65,18 @@ jobs:
           ensure_keyserver() {
             keyserver="$1"
             check_home="$(mktemp -d)"
-            if gpg --homedir "$check_home" --batch --keyserver "$keyserver" --recv-keys "${{ steps.gpg.outputs.fingerprint }}"; then
+            if timeout 30s gpg --homedir "$check_home" --batch --keyserver "$keyserver" --recv-keys "${{ steps.gpg.outputs.fingerprint }}"; then
               rm -rf "$check_home"
               echo "GPG public key is already available on $keyserver."
               return 0
             fi
             rm -rf "$check_home"
 
-            gpg --batch --keyserver "$keyserver" --send-keys "${{ steps.gpg.outputs.fingerprint }}"
+            timeout 30s gpg --batch --keyserver "$keyserver" --send-keys "${{ steps.gpg.outputs.fingerprint }}"
 
             for attempt in 1 2 3 4 5; do
               verify_home="$(mktemp -d)"
-              if gpg --homedir "$verify_home" --batch --keyserver "$keyserver" --recv-keys "${{ steps.gpg.outputs.fingerprint }}"; then
+              if timeout 30s gpg --homedir "$verify_home" --batch --keyserver "$keyserver" --recv-keys "${{ steps.gpg.outputs.fingerprint }}"; then
                 rm -rf "$verify_home"
                 echo "GPG public key is visible on $keyserver."
                 return 0
@@ -91,7 +91,6 @@ jobs:
 
           ensure_keyserver keyserver.ubuntu.com
           ensure_keyserver keys.openpgp.org
-          ensure_keyserver pgp.mit.edu
 
       - name: Publish to Maven Central
         if: steps.central.outputs.published != 'true'
