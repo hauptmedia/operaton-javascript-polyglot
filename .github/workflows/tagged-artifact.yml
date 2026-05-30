@@ -1,16 +1,16 @@
-name: Build Tagged Artifact
+name: Release
 
 on:
   push:
     tags:
-      - '*'
+      - 'v*'
 
 permissions:
   contents: read
 
 jobs:
-  build:
-    name: Build JAR
+  publish:
+    name: Build and publish
     runs-on: ubuntu-latest
 
     steps:
@@ -23,9 +23,18 @@ jobs:
           distribution: temurin
           java-version: '17'
           cache: maven
+          server-id: central
+          server-username: CENTRAL_USERNAME
+          server-password: CENTRAL_PASSWORD
+          gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
+          gpg-passphrase: MAVEN_GPG_PASSPHRASE
 
-      - name: Build package
-        run: mvn -B package
+      - name: Publish to Maven Central
+        run: mvn -B -Pcentral-release deploy
+        env:
+          CENTRAL_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
+          CENTRAL_PASSWORD: ${{ secrets.CENTRAL_PASSWORD }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
 
       - name: Prepare release POM
         run: |
@@ -39,5 +48,6 @@ jobs:
           path: |
             target/operaton-javascript-polyglot-*.jar
             target/operaton-javascript-polyglot-*.pom
+            target/operaton-javascript-polyglot-*.asc
           if-no-files-found: error
           retention-days: 30

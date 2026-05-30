@@ -39,27 +39,13 @@ TypeScript prevents the diagram from being deployed.
 
 ## Maven Usage
 
-The jar is not published to Maven Central yet. Until it is available from a
-public Maven repository, download the jar from the GitHub Releases page and add
-it to the application classpath, or install it into a local or private Maven
-repository.
+The plugin is published to Maven Central and can be added directly as a Maven
+dependency.
 
 The plugin has its own version lifecycle. The current plugin version is
 `0.2.0`; it is built and tested against Operaton `2.1.0`.
 
-Install a downloaded release jar into the local Maven repository with:
-
-```sh
-mvn install:install-file \
-  -Dfile=operaton-javascript-polyglot-0.2.0.jar \
-  -DgroupId=com.elabric.bpm.extensions \
-  -DartifactId=operaton-javascript-polyglot \
-  -Dversion=0.2.0 \
-  -Dpackaging=jar
-```
-
-After installing or publishing the jar to a Maven repository, add the dependency
-to the Operaton application:
+Add the dependency to the Operaton application:
 
 ```xml
 <dependency>
@@ -196,11 +182,3 @@ The tests cover:
 - TypeScript deployment validation
 - default `javascript` compatibility
 - Spring Boot auto-configuration
-
-## Tagged Builds
-
-Pushing any Git tag triggers the `Build Tagged Artifact` GitHub Actions workflow.
-The workflow runs `mvn -B package` on Java 17 and uploads the built jar and POM
-from `target/operaton-javascript-polyglot-*` as workflow artifacts. Attach both
-files to the corresponding GitHub Release so users can download them without
-Maven Central.

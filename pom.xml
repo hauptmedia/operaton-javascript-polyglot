@@ -11,6 +11,31 @@
 
   <name>Operaton JavaScript Polyglot</name>
   <description>Operaton process engine plugin that exposes first-class JSON process variables through the javascript-polyglot and typescript-polyglot script languages.</description>
+  <url>https://github.com/elabric/operaton-javascript-polyglot</url>
+
+  <licenses>
+    <license>
+      <name>Apache License, Version 2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <id>elabric</id>
+      <name>Elabric</name>
+      <organization>Elabric</organization>
+      <organizationUrl>https://github.com/elabric</organizationUrl>
+    </developer>
+  </developers>
+
+  <scm>
+    <connection>scm:git:https://github.com/elabric/operaton-javascript-polyglot.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/elabric/operaton-javascript-polyglot.git</developerConnection>
+    <url>https://github.com/elabric/operaton-javascript-polyglot</url>
+    <tag>HEAD</tag>
+  </scm>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -23,6 +48,10 @@
     <junit.version>6.0.3</junit.version>
     <assertj.version>3.27.7</assertj.version>
     <surefire.version>3.5.5</surefire.version>
+    <source-plugin.version>3.3.1</source-plugin.version>
+    <javadoc-plugin.version>3.11.2</javadoc-plugin.version>
+    <gpg-plugin.version>3.2.8</gpg-plugin.version>
+    <central-publishing-plugin.version>0.10.0</central-publishing-plugin.version>
   </properties>
 
   <dependencies>
@@ -122,4 +151,75 @@
       </plugin>
     </plugins>
   </build>
+
+  <profiles>
+    <profile>
+      <id>central-release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <version>${source-plugin.version}</version>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <goals>
+                  <goal>jar-no-fork</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>${javadoc-plugin.version}</version>
+            <executions>
+              <execution>
+                <id>attach-javadocs</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <doclint>none</doclint>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>${gpg-plugin.version}</version>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <passphrase>${env.MAVEN_GPG_PASSPHRASE}</passphrase>
+              <gpgArguments>
+                <arg>--batch</arg>
+                <arg>--pinentry-mode</arg>
+                <arg>loopback</arg>
+              </gpgArguments>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.sonatype.central</groupId>
+            <artifactId>central-publishing-maven-plugin</artifactId>
+            <version>${central-publishing-plugin.version}</version>
+            <extensions>true</extensions>
+            <configuration>
+              <publishingServerId>central</publishingServerId>
+              <autoPublish>true</autoPublish>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>
