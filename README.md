@@ -33,7 +33,9 @@ want native JavaScript-style JSON access:
 `typescript-polyglot` adds TypeScript syntax on top of the same runtime model. It
 uses the official TypeScript compiler from the Maven classpath in transpile-only
 mode, so it does not need Node.js and does not type-check against a project
-`tsconfig.json` at runtime.
+`tsconfig.json` at runtime. Inline `typescript-polyglot` scripts are validated
+with the same compiler diagnostics while BPMN resources are deployed, so invalid
+TypeScript prevents the diagram from being deployed.
 
 ## Maven Usage
 
@@ -147,6 +149,8 @@ The plugin wraps Operaton's scripting setup in three places:
   JSR-223 language name and delegates execution to GraalJS.
 - `TypeScriptPolyglotScriptEngineFactory` exposes the `typescript-polyglot`
   JSR-223 language name. It transpiles TypeScript to JavaScript before execution.
+- `TypeScriptPolyglotBpmnParseListener` validates inline `typescript-polyglot`
+  scripts during BPMN deployment.
 - `JavaScriptPolyglotScriptingEngines` keeps default bindings for every language
   except the polyglot languages.
 - `JavaScriptPolyglotValueMapper` converts between Spin JSON, Java host objects,
@@ -166,7 +170,7 @@ This plugin is deliberately opt-in:
 - Only scripts using `javascript-polyglot` or `typescript-polyglot` receive the
   native JSON bindings.
 - `typescript-polyglot` is transpile-only. Syntax errors are reported before
-  execution, but semantic type errors are not checked at runtime.
+  deployment and execution, but semantic type errors are not checked.
 
 ## Tests
 
@@ -183,6 +187,7 @@ The tests cover:
 - automatic write-back on JSON mutation
 - compiled script evaluation
 - TypeScript transpilation and diagnostics
+- TypeScript deployment validation
 - default `javascript` compatibility
 - Spring Boot auto-configuration
 

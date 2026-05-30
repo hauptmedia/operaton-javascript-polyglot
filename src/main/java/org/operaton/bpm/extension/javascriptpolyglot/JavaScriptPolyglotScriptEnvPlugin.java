@@ -1,6 +1,7 @@
 package org.operaton.bpm.extension.javascriptpolyglot;
 
 import org.operaton.bpm.engine.ProcessEngine;
+import org.operaton.bpm.engine.impl.bpmn.parser.BpmnParseListener;
 import org.operaton.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.operaton.bpm.engine.impl.cfg.ProcessEnginePlugin;
 import org.operaton.bpm.engine.impl.mock.MocksResolverFactory;
@@ -28,7 +29,7 @@ public class JavaScriptPolyglotScriptEnvPlugin implements ProcessEnginePlugin {
 
     @Override
     public void preInit(ProcessEngineConfigurationImpl processEngineConfiguration) {
-        // no-op
+        applyDeploymentValidation(processEngineConfiguration);
     }
 
     @Override
@@ -47,6 +48,21 @@ public class JavaScriptPolyglotScriptEnvPlugin implements ProcessEnginePlugin {
         applyScriptingEngines(processEngineConfiguration);
         processEngineConfiguration.setEnvScriptResolvers(createScriptEnvResolvers(processEngineConfiguration.getEnvScriptResolvers()));
         applyScriptingEnvironment(processEngineConfiguration);
+    }
+
+    private void applyDeploymentValidation(ProcessEngineConfigurationImpl processEngineConfiguration) {
+        var existingParseListeners = processEngineConfiguration.getCustomPreBPMNParseListeners();
+        var parseListeners = new ArrayList<BpmnParseListener>();
+
+        if (existingParseListeners != null) {
+            parseListeners.addAll(existingParseListeners);
+        }
+
+        if (parseListeners.stream().noneMatch(TypeScriptPolyglotBpmnParseListener.class::isInstance)) {
+            parseListeners.add(new TypeScriptPolyglotBpmnParseListener());
+        }
+
+        processEngineConfiguration.setCustomPreBPMNParseListeners(parseListeners);
     }
 
     private void applyScriptingEngines(ProcessEngineConfigurationImpl processEngineConfiguration) {
